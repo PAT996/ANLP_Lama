@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { MenuIcon, Send } from 'lucide-react'
 
 type Message = {
@@ -17,22 +17,41 @@ type Message = {
 type Assistant = {
   id: string
   name: string
-  avatar: string
   greeting: string
 }
 
 const assistants: Assistant[] = [
-  { id: 'general', name: 'General Assistant', avatar: '/avatars/robot-1.png', greeting: "Hello! I'm your general assistant. How can I help you today?" },
-  { id: 'tech', name: 'Tech Support', avatar: '/avatars/robot-2.png', greeting: "Hi there! I'm your tech support assistant. What technical issue can I help you with?" },
-  { id: 'creative', name: 'Creative Helper', avatar: '/avatars/robot-3.png', greeting: "Greetings! I'm your creative assistant. Let's brainstorm some ideas together!" },
+  { id: 'sheldon', name: 'Sheldon', greeting: "Ah, finally, an intelligent conversation! Let’s hope you possess a reasonable grasp of physics. If not, don’t worry—I can explain everything in excruciating detail. Bazinga!" },
+  { id: 'tech', name: 'Crypto Tech Bro', greeting: "Yo! You ready to 10x your knowledge and dive into the future of decentralized finance? Let’s talk blockchain, NFTs, and how we’re all going to the moon—just HODL tight!" },
+  { id: 'genalpha', name: 'Gen Alpha Skibbidi', greeting: "Hey! What’s up? You on TikTok? Wanna see something cool? I just got this new game—it’s lit! Oh, and I can teach you all about AI and stuff, like, super fast." },
 ]
+
+const getLocalStorageMessages = (assistantId: string) => {
+  const storedMessages = localStorage.getItem(`messages-${assistantId}`)
+  return storedMessages ? JSON.parse(storedMessages) : []
+}
 
 export function ChatbotPageComponent() {
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant>(assistants[0])
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: selectedAssistant.greeting, sender: 'assistant' }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
+
+  // Load messages from localStorage when the assistant is selected
+  useEffect(() => {
+    const storedMessages = getLocalStorageMessages(selectedAssistant.id)
+    if (storedMessages.length > 0) {
+      setMessages(storedMessages)
+    } else {
+      setMessages([{ id: 1, text: selectedAssistant.greeting, sender: 'assistant' }])
+    }
+  }, [selectedAssistant])
+
+  // Store messages in localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(`messages-${selectedAssistant.id}`, JSON.stringify(messages))
+    }
+  }, [messages, selectedAssistant])
 
   const handleSend = () => {
     if (input.trim()) {
@@ -54,7 +73,6 @@ export function ChatbotPageComponent() {
 
   const handleAssistantChange = (assistant: Assistant) => {
     setSelectedAssistant(assistant)
-    setMessages([{ id: 1, text: assistant.greeting, sender: 'assistant' }])
   }
 
   return (
@@ -62,7 +80,7 @@ export function ChatbotPageComponent() {
       <div className="flex h-screen overflow-hidden w-full">
         <Sidebar className="border-r">
           <SidebarHeader className="h-14 border-b px-4 flex items-center">
-            <h2 className="font-semibold">Choose an Assistant</h2>
+            <h2 className="font-semibold">Choose a Chatpartner</h2>
           </SidebarHeader>
           <SidebarContent>
             {assistants.map((assistant) => (
@@ -74,7 +92,6 @@ export function ChatbotPageComponent() {
                 }`}
               >
                 <Avatar className="h-10 w-10 mr-3">
-                  <AvatarImage src={assistant.avatar} alt={assistant.name} />
                   <AvatarFallback>{assistant.name[0]}</AvatarFallback>
                 </Avatar>
                 <span>{assistant.name}</span>
@@ -99,7 +116,6 @@ export function ChatbotPageComponent() {
               >
                 {message.sender === 'assistant' && (
                   <Avatar className="h-8 w-8 mr-2">
-                    <AvatarImage src={selectedAssistant.avatar} alt={selectedAssistant.name} />
                     <AvatarFallback>{selectedAssistant.name[0]}</AvatarFallback>
                   </Avatar>
                 )}
@@ -121,7 +137,7 @@ export function ChatbotPageComponent() {
               placeholder="Type a message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              onKeyUp={(e) => e.key === 'Enter' && handleSend()}
               className="flex-grow mr-2"
             />
             <Button onClick={handleSend}>
