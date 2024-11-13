@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
     const model = new LlamaModel({
-        modelPath: path.join(__dirname, "..", "..", "..", "models", "Meta-Llama-3-8B-Instruct.Q2_K.gguf")
+        modelPath: path.join(__dirname, "..", "..", "..", "models", "Chronos-Gold-12B-1.0.i1-IQ1_S.gguf")
     });
 
 
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     session.prompt(prompt, {
         onToken(token: number[]) {
             const decoded = session.context.decode(token);
+            // const decoded = new TextDecoder("utf-8").decode(new Uint8Array(token));
             writer.write(decoded);
         },
         signal: req.signal,
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     return new NextResponse(readable, {
         headers: {
-            'Content-Type': 'text/plain',
+            'Content-Type': 'text/plain; charset=utf-8',
             'Transfer-Encoding': 'chunked',
             'Cache-Control': 'no-cache',
         }

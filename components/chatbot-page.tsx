@@ -4,9 +4,17 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sidebar, SidebarContent, SidebarHeader, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { MenuIcon, Send } from 'lucide-react'
+import { MenuIcon, Send, Plus } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+
+type Chat = {
+  id: string,
+  chatbotId: string
+}
 
 type Message = {
   id: number
@@ -28,7 +36,7 @@ const cryptoTechBroPrompt = `
 You are a high-energy tech enthusiast obsessed with blockchain, cryptocurrency, and decentralized finance. Your goal is to explain these concepts to others in a casual and approachable way, while hyping the potential of tech and finance. Use phrases like "HODL" and "to the moon!" to maintain your persona, and always stay upbeat and forward-thinking when discussing NFTs, DeFi, and crypto trends.`;
 
 const genAlphaSkibbidiPrompt = `
-You are a trendy and fun-loving tech-savvy assistant. You love talking about the latest social media trends (especially TikTok), gaming, and new tech like AI. You speak quickly, use slang, emojis, and are always excited to share cool new things. Keep things fun, casual, and playful, with a focus on keeping up with the fast-moving world of Gen Alpha and Gen Z culture.`;
+You are a trendy and fun-loving tech-savvy assistant. You love talking about the latest social media trends (especially TikTok), gaming, and new tech like AI. You speak quickly, use slang, emojis, and are always excited to share cool new things. Keep things fun, casual, and playful, with a focus on keeping up with the fast-moving world of Gen Alpha and Gen Z culture. Only use following emojis 🚽😂🤯🤢💀🎥🤖😱🛀🌀`;
 
 const assistants = [
   { id: 'sheldon', name: 'Sheldon', greeting: "Ah, finally, an intelligent conversation! Let’s hope you possess a reasonable grasp of physics. If not, don’t worry—I can explain everything in excruciating detail. Bazinga!", systemPrompt: sheldonPrompt },
@@ -138,6 +146,65 @@ export function ChatbotPageComponent() {
                 <span>{assistant.name}</span>
               </button>
             ))}
+
+          <SidebarFooter className="p-4">
+            <Dialog open={isNewChatModalOpen} onOpenChange={setIsNewChatModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full">
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Chat
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Start a New Chat</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  {assistants.map((assistant) => (
+                    <div key={assistant.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={assistant.id}
+                        checked={selectedAssistants.includes(assistant.id)}
+                        onCheckedChange={(checked) => {
+                          setSelectedAssistants(prev =>
+                            checked
+                              ? [...prev, assistant.id]
+                              : prev.filter(id => id !== assistant.id)
+                          )
+                        }}
+                      />
+                      <Label htmlFor={assistant.id}>{assistant.name}</Label>
+                    </div>
+                  ))}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all"
+                      checked={selectedAssistants.includes('all')}
+                      onCheckedChange={(checked) => {
+                        setSelectedAssistants(checked ? ['all'] : [])
+                      }}
+                    />
+                    <Label htmlFor="all">All Assistants</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="chat-with-each-other"
+                      checked={selectedAssistants.includes('chat-with-each-other')}
+                      onCheckedChange={(checked) => {
+                        setSelectedAssistants(prev =>
+                          checked
+                            ? [...prev, 'chat-with-each-other']
+                            : prev.filter(id => id !== 'chat-with-each-other')
+                        )
+                      }}
+                    />
+                    <Label htmlFor="chat-with-each-other">Assistants Chat with Each Other</Label>
+                  </div>
+                </div>
+                <Button onClick={handleNewChat}>Start Chat</Button>
+              </DialogContent>
+            </Dialog>
+          </SidebarFooter>
           </SidebarContent>
         </Sidebar>
         <div className="flex-1 flex flex-col">
