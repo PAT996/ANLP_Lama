@@ -22,9 +22,30 @@ import {
 } from "@/components/ui/sidebar"
 
 import { assistants } from "@/lib/assistants"
+import { redirect } from 'next/navigation'
+// import { Chat } from "@/lib/types"
+import useChatStore from "@/lib/chatStore"
+
+
+// function createNewChat(assistantId: string, setChats: (chats: Chat[]) => void) {
+//   // Get array of previous chats from localStorage
+//   const storedChats: Chat[] = JSON.parse(localStorage.getItem(`chats`) || "[]")
+
+//   const chatData = {
+//     assistantId: assistantId,
+//     chatId: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+//   }
+//   localStorage.setItem(`chats`, JSON.stringify([...storedChats, chatData]))
+//   setChats([...storedChats, chatData])
+//   redirect(`/chat/${chatData.chatId}`)
+// }
+
 
 export function NavNewChat() {
   const { isMobile } = useSidebar()
+
+
+  const createChat = useChatStore((state) => state.createChat);
 
   return (
     <SidebarMenu>
@@ -56,7 +77,11 @@ export function NavNewChat() {
             </DropdownMenuLabel>
             <DropdownMenuGroup>
               {Array.from(assistants.values()).map((assistant) => (
-                <DropdownMenuItem key={assistant.id}>
+                <DropdownMenuItem key={assistant.id} onClick={() => {
+                  const chatId = createChat(assistant.id)
+                  redirect(`/chat/${chatId}`)
+                }
+                }>
                   {assistant.name}
                 </DropdownMenuItem>
               ))}

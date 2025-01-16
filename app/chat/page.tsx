@@ -1,3 +1,3 @@
 export default function Page() {
-    return <>Test</>;
+    return <>Select a chat partner</>;
 }

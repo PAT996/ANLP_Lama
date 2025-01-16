@@ -21,8 +21,8 @@
 // }
 
 
-// const getLocalStorageMessages = (assistantId: string) => {
-//   const storedMessages = localStorage.getItem(`messages-${assistantId}`)
+// const getLocalStorageMessages = (chatId: string) => {
+//   const storedMessages = localStorage.getItem(`messages-${chatId}`)
 //   return storedMessages ? JSON.parse(storedMessages) : []
 // }
 
