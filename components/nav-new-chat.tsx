@@ -1,8 +1,7 @@
-"use client"
+"use client";
 
-import {
-  ChevronsUpDown,
-} from "lucide-react"
+import { ChevronsUpDown } from "lucide-react";
+import Link from "next/link";
 
 import {
   DropdownMenu,
@@ -12,38 +11,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
-import { assistants } from "@/lib/assistants"
-import { redirect } from 'next/navigation'
-// import { Chat } from "@/lib/types"
-import useChatStore from "@/lib/chatStore"
-
-
-// function createNewChat(assistantId: string, setChats: (chats: Chat[]) => void) {
-//   // Get array of previous chats from localStorage
-//   const storedChats: Chat[] = JSON.parse(localStorage.getItem(`chats`) || "[]")
-
-//   const chatData = {
-//     assistantId: assistantId,
-//     chatId: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-//   }
-//   localStorage.setItem(`chats`, JSON.stringify([...storedChats, chatData]))
-//   setChats([...storedChats, chatData])
-//   redirect(`/chat/${chatData.chatId}`)
-// }
-
+import { assistants } from "@/lib/assistants";
+import { redirect } from "next/navigation";
+import useChatStore from "@/lib/chatStore";
 
 export function NavNewChat() {
-  const { isMobile } = useSidebar()
-
+  const { isMobile } = useSidebar();
 
   const createChat = useChatStore((state) => state.createChat);
 
@@ -71,28 +53,32 @@ export function NavNewChat() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Start a new Chat with</span>
+                  <span className="truncate font-semibold">
+                    Start a new Chat with
+                  </span>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuGroup>
               {Array.from(assistants.values()).map((assistant) => (
-                <DropdownMenuItem key={assistant.id} onClick={() => {
-                  const chatId = createChat(assistant.id)
-                  redirect(`/chat/${chatId}`)
-                }
-                }>
+                <DropdownMenuItem
+                  key={assistant.id}
+                  onClick={() => {
+                    const chatId = createChat(assistant.id);
+                    redirect(`/chat/${chatId}`);
+                  }}
+                >
                   {assistant.name}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              Multiple Assistants
+              <Link href="/chat/multi">Multiple Assistants</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { getAssistantById } from './assistants';
 
 export interface Chat {
     chatId: string;
@@ -9,6 +10,8 @@ export interface Message {
     id: number;
     text: string;
     sender: 'user' | 'assistant';
+    assistantId?: string;
+    senderName?: string;
 }
 
 interface ChatStore {
@@ -18,7 +21,8 @@ interface ChatStore {
     createChat: (assistantId: string) => string;
     deleteChat: (chatId: string) => void;
     loadMessages: (chatId: string) => void;
-    addMessage: (chatId: string, message: Message) => void;
+    addMessage: (chatId: string, text: string, sender: 'user' | 'assistant', assistantId?: string, senderName?: string) => void;
+    updateLastAssistantMessage: (chatId: string, assistantResponse: string) => void;
     resetMessages: () => void;
 }
 
@@ -27,9 +31,6 @@ const useChatStore = create<ChatStore>((set) => ({
     messages: [],
 
     loadChats: () => {
-        if (typeof window === 'undefined')
-            return;
-
         set({
             chats: JSON.parse(localStorage.getItem('chats') || '[]'),
         });
@@ -38,10 +39,13 @@ const useChatStore = create<ChatStore>((set) => ({
     createChat: (assistantId: string) => {
         const chatId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const newChat = { chatId, assistantId };
+        const assistant = getAssistantById(assistantId);
+        const initialMessages = [{text: assistant.greeting, sender: 'assistant', id: 1}];
 
         set((state) => {
             const updatedChats = [...state.chats, newChat];
             localStorage.setItem('chats', JSON.stringify(updatedChats));
+            localStorage.setItem(`messages-${chatId}`, JSON.stringify(initialMessages));
             return { chats: updatedChats };
         });
 
@@ -67,12 +71,29 @@ const useChatStore = create<ChatStore>((set) => ({
         set({ messages: parsedMessages });
     },
 
-    addMessage: (chatId: string, message: Message) => {
+    addMessage: (chatId: string, text: string, sender: 'user' | 'assistant', assistantId?: string, senderName?: string) => {
         set((state) => {
+            const message = { id: state.messages.length + 1, text, sender, assistantId, senderName };
             const updatedMessages = [...state.messages, message];
             localStorage.setItem(`messages-${chatId}`, JSON.stringify(updatedMessages));
             return { messages: updatedMessages };
         });
+    },
+
+    updateLastAssistantMessage: (chatId: string, assistantResponse: string) => {
+        set((state) => {
+            const lastAssistantIndex = state.messages.length - 1 - state.messages.slice().reverse().findIndex((msg) => msg.sender === 'assistant');
+
+            if (lastAssistantIndex >= 0) {
+                const updatedMessages = state.messages.map((msg, index) =>
+                    index === lastAssistantIndex ? { ...msg, text: assistantResponse } : msg
+                );
+                localStorage.setItem(`messages-${chatId}`, JSON.stringify(updatedMessages));
+                return { messages: updatedMessages };
+            }
+
+            return state;
+        })
     },
 
     resetMessages: () => {
